@@ -47,6 +47,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	 */
 	protected void configure(HttpSecurity http) throws Exception {
 		http.authorizeRequests()
+			.antMatchers("/verify").permitAll()
+			.antMatchers("/reset_password").permitAll()
 			.antMatchers("/users").authenticated()
 			//.antMatchers("/users/edit/**").hasAnyAuthority("ADMIN")
 			.antMatchers("/register").hasAnyAuthority("Level 2, Level 3")
