@@ -102,7 +102,7 @@
 					<td th:text="${user.fullName}">Full Name</td>
 					<td th:text="${user.role.name}">Role</td>
 					<td>
-						<span th:if="${user.status}">Actiavetd</span>
+						<span th:if="${user.status}">Active</span>
 						<span th:unless="${user.status}">Pending</span>
 					</td>
 					<td sec:authorize="hasAnyAuthority('Level 3')" ><a th:href="@{'/users/delete?id=' + ${user.id}}">Delete</a></td>
@@ -112,7 +112,7 @@
 	</div>
 </div>
 <div class="footer">
-  <p>@copyright</p>
+  <p>@copyright 2022</p>
 </div>
 </body>
 </html>
