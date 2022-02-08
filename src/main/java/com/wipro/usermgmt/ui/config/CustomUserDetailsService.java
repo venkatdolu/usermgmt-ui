@@ -18,9 +18,6 @@ import com.wipro.usermgmt.ui.model.User;
  */
 public class CustomUserDetailsService implements UserDetailsService {
 
-	/*@Autowired
-	private UserRepository userRepo; */
-	
 	private UserManagementFeignClient feignClient;
 
 	@Autowired
@@ -33,9 +30,13 @@ public class CustomUserDetailsService implements UserDetailsService {
 	 */
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		//User user = userRepo.findByUserName(username);
-		User user = feignClient.getUserByName(username);
-		if (user == null) {
+		User user = null;
+		try {
+			user = feignClient.getExistanceUser("email", username);
+			if (user == null) {
+				throw new UsernameNotFoundException("User not found");
+			}
+		} catch (Exception e) {
 			throw new UsernameNotFoundException("User not found");
 		}
 		return new CustomUserDetails(user);

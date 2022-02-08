@@ -78,9 +78,9 @@
 <div class="container text-center">
 	<div>
 		<h1>List of Users</h1>
-			<span sec:authorize="hasAnyAuthority('Level 2', 'Level 3')" style="float: right;"> <a
+			<button type="submit"style="float:right" ><span sec:authorize="hasAnyAuthority('Level 2', 'Level 3')" style="float: right;"> <a
 				th:href="@{/register}" style="font-size: x-large;"> Create New User</a>
-			</span>
+			</span></button>
 		</div>
 	
 	<div>

@@ -1,5 +1,6 @@
 package com.wipro.usermgmt.ui.service.impl;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -27,6 +28,9 @@ import com.wipro.usermgmt.ui.service.MailSender;
 public class AppServiceImpl implements AppService {
 	
 	private static final Logger Log = LoggerFactory.getLogger(AppServiceImpl.class);
+	
+	public final static List<Role> LEVEL3_ROLES = Arrays.asList(new Role(1L, "Level 1"), new Role(2L, "Level 2"),
+			new Role(3L, "Level 3"));
 
 	private PasswordEncoder passwordEncoder;
 
@@ -56,14 +60,25 @@ public class AppServiceImpl implements AppService {
 	public ResponseVo createUser(User user, String siteURL) {
 		Log.debug("createUser method invoked for useName: {}", user.getUserName());
 		try {
-			User existanceUser = feignClient.getUserByName(user.getUserName());
-			if (!Objects.isNull(existanceUser)) {
-				Log.info("username {} already exists in the system", user.getUserName());
-				return new ResponseVo(402,
-						"User already exist with username:" + user.getUserName() + ". Please try with different user.");
+			String errorMsg = "";
+			if (Objects.nonNull(user.getUserName())) {
+				User existanceUser = feignClient.getExistanceUser("username", user.getUserName());
+
+				if (Objects.nonNull(existanceUser)) {
+					errorMsg = "User already exist with username:" + user.getUserName()
+							+ ". Please try with different username.";
+					return new ResponseVo(402, errorMsg);
+				}
+
+			} 
+			
+			if (Objects.nonNull(user.getEmail())) {
+				User existanceUser = feignClient.getExistanceUser("email", user.getEmail());
+				if (Objects.nonNull(existanceUser)) {
+				errorMsg = "User already exist with email:" + user.getEmail() + ". Please try with different email.";
+				return new ResponseVo(402, errorMsg);
+				}
 			}
-			Role roleUser = feignClient.getRoleById(user.getRole().getId());
-			user.setRole(roleUser);
 			String password = UUID.randomUUID().toString().replace("-", "");
 			user.setPassword(password);
 			encodePassword(user);
@@ -85,17 +100,6 @@ public class AppServiceImpl implements AppService {
 		List<User> users = feignClient.getUsers();
 		Log.debug("listAll method end.");
 		return users;
-	}
-
-	/**
-	 * Description: connect to getUserById API using fiegnClient
-	 */
-	@Override
-	public User get(Long id) {
-		Log.debug("get method invoked for id {} ." + id);
-		User user = feignClient.getUserById(id);
-		Log.debug("get method end for id {} ." + id);
-		return user;
 	}
 
 	/**
@@ -137,14 +141,14 @@ public class AppServiceImpl implements AppService {
 	}
 
 	/**
-	 * Description: connect to getRoles API using fiegnClient
+	 * Description: to get existanceuser
 	 */
 	@Override
-	public List<Role> getRoles() {
-		Log.debug("getRoles method invoked.");
-		List<Role> roles = feignClient.getAllRoles();
-		Log.debug("getRoles method end.");
-		return roles;
+	public User getExistanceUser(String field, String value) {
+		Log.info("getExistanceUser method invoked for field : {}, value: {} ", field, value);
+		User existanceUser = feignClient.getExistanceUser(field, value);
+		Log.info("getExistanceUser method invoked for field : {}, value: {} ", field, value);
+		return existanceUser;
 	}
 
 }

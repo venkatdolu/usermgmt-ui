@@ -1,4 +1,6 @@
 package com.wipro.usermgmt.ui.controller;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -6,6 +8,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +33,11 @@ import com.wipro.usermgmt.ui.service.AppService;
 public class AppController {
 
 	private static final Logger Log = LoggerFactory.getLogger(AppController.class);
+	
+	public final static List<Role> LEVEL2_ROLES = Arrays.asList(new Role(1L, "Level 1"), new Role(2L, "Level 2"));
+	
+	public final static List<Role> LEVEL3_ROLES = Arrays.asList(new Role(1L, "Level 1"), new Role(2L, "Level 2"),
+			new Role(3L, "Level 3"));
 
 	private AppService service;
 
@@ -55,10 +64,18 @@ public class AppController {
 	 * @return
 	 */
 	@GetMapping("/register")
-	public String showRegistrationForm(Model model, HttpServletRequest request) {
+	public String showRegistrationForm(Model model, HttpServletRequest request,
+			Authentication authentication ) {
 		Log.info("showRegistrationForm request invoked");
 		model.addAttribute("user", new User());
-		List<Role> rolesList = service.getRoles();
+		List<Role> rolesList = LEVEL3_ROLES;
+		@SuppressWarnings("unchecked")
+		Collection<GrantedAuthority> role = (Collection<GrantedAuthority>) authentication.getAuthorities();
+		for (GrantedAuthority grantedAuthority : role) {
+			if (grantedAuthority.getAuthority().equals("Level 2")) {
+				rolesList = LEVEL2_ROLES;
+			}
+		}
 		model.addAttribute("rolesList", rolesList);
 		Log.info("showRegistrationForm request end");
 		return "signup_form";
@@ -73,12 +90,20 @@ public class AppController {
 	 * @return
 	 */
 	@PostMapping("/process_register")
-	public String processRegister(User user, Model model, HttpServletRequest request) {
+	public String processRegister(User user, Model model, HttpServletRequest request,
+			Authentication authentication) {
 		Log.info("processRegister request invoked for userName : {}", user.getUserName());
 		ResponseVo resposne = service.createUser(user, getSiteURL(request));
 		if (resposne.getResponseCode() != 200) {
 			model.addAttribute("user", user);
-			List<Role> rolesList = service.getRoles();
+			List<Role> rolesList = LEVEL3_ROLES;
+			@SuppressWarnings("unchecked")
+			Collection<GrantedAuthority> role = (Collection<GrantedAuthority>) authentication.getAuthorities();
+			for (GrantedAuthority grantedAuthority : role) {
+				if (grantedAuthority.getAuthority().equals("Level 2")) {
+					rolesList = LEVEL2_ROLES;
+				}
+			}
 			model.addAttribute("rolesList", rolesList);
 			model.addAttribute("msg", resposne.getMessage());
 			Log.info("processRegister request end for userName : {}", user.getUserName());
@@ -152,10 +177,10 @@ public class AppController {
 	 */
 	@PostMapping("/reset_password")
 	public String processResetPassword(HttpServletRequest request, Model model) {
-		Long userId = Long.parseLong(request.getParameter("userId"));
+		String userId = request.getParameter("userId");
 		String password = request.getParameter("password");
 		Log.info("processResetPassword request invoked for id: {}", userId);
-		User user = service.get(userId);
+		User user = service.getExistanceUser("id", userId);
 		model.addAttribute("title", "Reset your password");
 
 		if (user == null) {

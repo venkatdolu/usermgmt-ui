@@ -46,24 +46,25 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	 * Description: configure authorization roles for the requested urls
 	 */
 	protected void configure(HttpSecurity http) throws Exception {
-		http.authorizeRequests()
-			.antMatchers("/verify").permitAll()
-			.antMatchers("/reset_password").permitAll()
-			.antMatchers("/users").authenticated()
-			//.antMatchers("/users/edit/**").hasAnyAuthority("ADMIN")
-			.antMatchers("/register").hasAnyAuthority("Level 2, Level 3")
-			.antMatchers("//process_register").hasAnyAuthority("Level 2, Level 3")
-			.antMatchers("/users/delete").hasAnyAuthority("Level 3")
-			.anyRequest().authenticated()
-			.and()
-			.formLogin()
-				.usernameParameter("username")
-				.defaultSuccessUrl("/users")
-				.permitAll()
-			.and()
-			.logout().logoutSuccessUrl("/").permitAll()
-			 .and()
-	          .exceptionHandling().accessDeniedPage("/error");
+		http
+	    .authorizeRequests()
+		.antMatchers("/verify").permitAll()
+		.antMatchers("/reset_password").permitAll()
+		.antMatchers("/users").authenticated()
+		//.antMatchers("/users/edit/**").hasAnyAuthority("ADMIN")
+		.antMatchers("/register").hasAnyAuthority("Level 2, Level 3")
+		.antMatchers("//process_register").hasAnyAuthority("Level 2, Level 3")
+		.antMatchers("/users/delete").hasAnyAuthority("Level 3")
+		.anyRequest().authenticated()
+		.and()
+		.formLogin()
+		.usernameParameter("username")
+		.defaultSuccessUrl("/users")
+		.permitAll()
+		.and()
+		.logout().logoutSuccessUrl("/").permitAll()
+		.and()
+	    .exceptionHandling().accessDeniedPage("/error");
 	} 
 
 }
